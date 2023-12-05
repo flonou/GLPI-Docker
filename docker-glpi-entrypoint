@@ -1,0 +1,50 @@
+#!/bin/sh
+set -e
+
+echo "Starting entrypoint..."
+for FOLDER in _log _pictures _plugins _sessions _uploads
+do
+  if [ ! -e /files/$FOLDER ]; then
+    echo "creating missing $FOLDER folder"
+    mkdir /files/$FOLDER
+  fi
+done
+chown www-data:www-data -R /config /files
+if [ -e /config/config_db.php ];  then # installed
+  echo "GLPI configuration found"
+  if [ -e /var/www/html/install/install.php ]; then # maybe not updated
+    echo "Trying to update database"
+    rm /var/www/html/install/install.php || true
+    cd /var/www/html/
+    php bin/console db:update --no-interaction
+  fi
+else # Not installed
+  #apt-get install mysql-client
+  #mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -h "$DB_HOST" -P "$DB_PORT" mysql 
+  echo "GLPI configuration not found, Trying to install using environment variables"
+  if [ "$DB_HOST" ] && [ "$DB_NAME" ] && [ "$DB_USER" ] && [ "$DB_PASSWORD" ];  then
+    echo "Found environment variables, installing..."
+    cd /var/www/html
+    php bin/console db:install --no-interaction \
+     --default-language="$DEFAULT_LANGUAGE" \
+     --db-host="$DB_HOST" \
+     --db-port="$DB_PORT" \
+     --db-name="$DB_NAME" \
+     --db-user="$DB_USER" \
+     --db-password="$DB_PASSWORD"    
+    rm /var/www/html/install/install.php  || true
+  else
+    echo "Necessary environment variables not found, please connect to the server to run interactive installation"
+  fi
+fi
+
+chown www-data:www-data -R /config /files
+
+
+#/usr/local/bin/docker-php-entrypoint:
+# first arg is `-f` or `--some-option`
+if [ "${1#-}" != "$1" ]; then
+    set -- apache2-foreground "$@"
+fi
+
+exec "$@"

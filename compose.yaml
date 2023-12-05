@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+#MariaDB Container
+  mariadb:
+    image: mariadb:10.7
+    container_name: mariadb
+    hostname: mariadb
+    env_file:
+      - ./mariadb.env
+    environment:
+      - TZ=Europe/Paris
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mariadb.env:/mariadb.env
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -u root -p$$MARIADB_ROOT_PASSWORD" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+#GLPI Container
+  glpi:
+    image: flonou/glpi:latest
+    container_name : glpi
+    hostname: glpi
+    depends_on:
+      mariadb:
+        condition: service_healthy 
+    volumes:
+    # - web_config_data:/config
+    # - web_files_data:/files
+    # - web_marketplace_data:/var/www/html/marketplace
+    # - web_plugins_data:/var/www/html/plugins
+    ports:
+      - "80:80"
+    env_file:
+      - ./glpi.env
+    environment:
+      - TIMEZONE=Europe/Paris
