@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.1.23-apache
 
 ARG GLPI_VERSION=10.0.3
 ARG PHPCAS_VERSION=1.6.0
