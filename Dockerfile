@@ -66,9 +66,10 @@ rm /tmp/CAS.tgz;
 
 COPY php.ini "$PHP_INI_DIR/php.ini"
 
-COPY docker-glpi-entrypoint /usr/local/bin/
-
-ENTRYPOINT ["docker-glpi-entrypoint"]
+WORKDIR /usr/local/bin/
+COPY docker-glpi-entrypoint ./
+RUN chmod 755 ./docker-glpi-entrypoint
+ENTRYPOINT ["./docker-glpi-entrypoint"]
 
 CMD ["apache2-foreground"]
 
