@@ -2,10 +2,30 @@
 set -e
 
 echo "Starting entrypoint..."
+
+if [ -n "$ENABLE_HTTPS" ]; then
+  echo "Enabling HTTPS"
+  ln -s /etc/apache2/sites-available/default-ssl.conf /etc/apache2/sites-enabled/default-ssl.conf
+  if [ -e /etc/apache2/ssl/server-ca.crt]; then
+    sed -ir 's/#SSLCertificateChainFile/SSLCertificateChainFile/g' /etc/apache2/sites-available/default-ssl.conf;
+  fi
+fi
+if [ -n "$DISABLE_HTTP" ]; then
+  echo "Disabling HTTP"
+  rm /etc/apache2/sites-available/000-default.conf
+fi
+
+for FOLDER in files config
+do
+  if [ ! -e /$FOLDER ]; then
+    echo "Creating missing $FOLDER folder"
+    mkdir /$FOLDER
+  fi
+done
 for FOLDER in _log _pictures _plugins _sessions _uploads
 do
   if [ ! -e /files/$FOLDER ]; then
-    echo "creating missing $FOLDER folder"
+    echo "Creating missing $FOLDER folder"
     mkdir /files/$FOLDER
   fi
 done

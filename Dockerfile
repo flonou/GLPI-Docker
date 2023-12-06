@@ -3,6 +3,15 @@ FROM php:8.2-apache
 ARG GLPI_VERSION=10.0.3
 ARG PHPCAS_VERSION=1.6.0
 
+# Prepare SSL
+RUN set -ex; \
+ a2enmod ssl && a2enmod rewrite; \
+ mkdir -p /etc/apache2/ssl; \
+ sed -ir 's/<VirtualHost.*443>/<VirtualHost _default_:443>/g' /etc/apache2/sites-available/default-ssl.conf; \
+ sed -ir 's/SSLCertificateFile.*/SSLCertificateFile \/etc\/apache2\/ssl\/ssl-cert.pem/g' /etc/apache2/sites-available/default-ssl.conf; \
+ sed -ir 's/SSLCertificateKeyFile.*/SSLCertificateKeyFile \/etc\/apache2\/ssl\/ssl-cert.key/g' /etc/apache2/sites-available/default-ssl.conf; \
+ sed -ir 's/#SSLCertificateChainFile.*/#SSLCertificateChainFile \/etc\/apache2\/ssl\/server-ca.crt/g' /etc/apache2/sites-available/default-ssl.conf;
+
 # Install packages
 RUN set -ex; \
  apt update; \
@@ -63,4 +72,5 @@ ENTRYPOINT ["docker-glpi-entrypoint"]
 
 CMD ["apache2-foreground"]
 
-EXPOSE 80 443
+EXPOSE 80
+EXPOSE 443

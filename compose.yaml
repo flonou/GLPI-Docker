@@ -13,8 +13,9 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
       - ./mariadb.env:/mariadb.env
+    # For persistant data
+    #  - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD-SHELL", "mysql -u root -p$$MARIADB_ROOT_PASSWORD" ]
       interval: 5s
@@ -29,14 +30,27 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy 
-    volumes:
-    # - web_config_data:/config
-    # - web_files_data:/files
-    # - web_marketplace_data:/var/www/html/marketplace
-    # - web_plugins_data:/var/www/html/plugins
+    #volumes:
+    # For persistant data
+    # - /config:/config
+    # - /files:/files
+    # - /marketplace:/var/www/html/marketplace
+    # - /plugins:/var/www/html/plugins
+    # To use HTTPS
+    # - /ssl:/etc/apache2/ssl
+    # or
+    # - ./ssl-cert.pem:/etc/apache2/ssl/ssl-cert.pem
+    # - ./ssl-cert.key:/etc/apache2/ssl/ssl-cert.key
+    #  and optionnaly
+    # - ./server-ca.crt:/etc/apache2/ssl/server-ca.crt
     ports:
-      - "80:80"
+      - "8080:80"
+      - "443:443"
     env_file:
       - ./glpi.env
     environment:
       - TIMEZONE=Europe/Paris
+    # To use HTTPS
+    #  - ENABLE_HTTPS=true
+    # To disable HTTP
+    #  - DISABLE_HTTP=true
