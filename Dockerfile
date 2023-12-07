@@ -1,7 +1,9 @@
+FROM composer:2.3 as composer
+
 FROM php:8.1.23-apache
 
 ARG GLPI_VERSION=10.0.3
-ARG PHPCAS_VERSION=1.6.0
+ARG PHPCAS_VERSION=1.6.1
 
 # Prepare SSL
 RUN set -ex; \
@@ -47,10 +49,11 @@ RUN set -ex; \
   pecl install apcu; \
   docker-php-ext-enable apcu;
 # Get glpi, extract and set ownership
+WORKDIR /var/tmp
 RUN set -ex; \
-curl -fsSL -o /tmp/glpi.tgz https://github.com/glpi-project/glpi/releases/download/${GLPI_VERSION}/glpi-${GLPI_VERSION}.tgz; \
-tar --transform='flags=r;s/^glpi//' -xzf /tmp/glpi.tgz -C /var/www/html; \
-rm /tmp/glpi.tgz; \
+curl -fsSL -o ./glpi.tgz https://github.com/glpi-project/glpi/releases/download/${GLPI_VERSION}/glpi-${GLPI_VERSION}.tgz; \
+tar --transform='flags=r;s/^glpi//' -xzf ./glpi.tgz -C /var/www/html; \
+rm ./glpi.tgz; \
 chown www-data:www-data -R /var/www/html; \
 rm -rf /var/lib/apt/lists/*;
 COPY local_define.php /var/www/html/config/
@@ -59,10 +62,14 @@ RUN set -ex; \
 echo "*/2 * * * * www-data /usr/local/bin/php /var/www/html/front/cron.php &>/dev/null" > /etc/cron.d/glpi; \
 crontab /etc/cron.d/glpi;
 # Install phpCAS
-RUN set -ex; \
-curl -fsSL -o /tmp/CAS.tgz https://github.com/apereo/phpCAS/releases/download/${PHPCAS_VERSION}/CAS-${PHPCAS_VERSION}.tgz; \
-pear install /tmp/CAS.tgz; \
-rm /tmp/CAS.tgz;
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+WORKDIR /var/tmp
+# This is a bit tricky but that's the best solution I found to add phpCAS through composer while keeping the already installed dependancies
+RUN set -ex; \ 
+composer require apereo/phpcas:${PHPCAS_VERSION}; \
+mv /var/tmp/vendor /var/www/html/phpCAS; \
+rm -r /var/tmp/*; \
+sed -ir '/require_once $autoload;/a require_once '\'/var/www/html/phpCAS/autoload.php\'';' /var/www/html/inc/autoload.function.php;
 
 COPY php.ini "$PHP_INI_DIR/php.ini"
 
