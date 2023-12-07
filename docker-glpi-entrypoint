@@ -60,6 +60,7 @@ fi
 
 chown www-data:www-data -R /config /files
 
+/sbin/service cron start
 
 #/usr/local/bin/docker-php-entrypoint:
 # first arg is `-f` or `--some-option`
