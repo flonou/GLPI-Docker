@@ -24,7 +24,8 @@ services:
 
 #GLPI Container
   glpi:
-    image: flonou/glpi:latest
+    build: ./
+    #image: flonou/glpi:latest
     container_name : glpi
     hostname: glpi
     depends_on:
@@ -46,6 +47,7 @@ services:
     ports:
       - "8080:80"
       - "443:443"
+    # For automatic installation
     env_file:
       - ./glpi.env
     environment:
