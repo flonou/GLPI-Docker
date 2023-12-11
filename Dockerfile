@@ -2,8 +2,8 @@ FROM composer:2.3 as composer
 
 FROM php:8.1.23-apache
 
-ARG GLPI_VERSION=10.0.3
-ARG PHPCAS_VERSION=1.5.0
+ARG GLPI_VERSION=10.0.10
+ARG PHPCAS_VERSION=1.6.1
 
 # Prepare SSL
 RUN set -ex; \
