@@ -2,7 +2,7 @@ FROM composer:2.3 as composer
 
 FROM php:8.1.23-apache
 
-ARG GLPI_VERSION=10.0.10
+ARG GLPI_VERSION=10.0.14
 ARG PHPCAS_VERSION=1.6.1
 
 # Prepare SSL
