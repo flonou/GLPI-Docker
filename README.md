@@ -1,10 +1,12 @@
 # GLPI-Docker
-A repository to create GLPI docker images
+A repository to create GLPI docker images allowing patching/replacing files in GLPI
 
 ## compose.yaml
 
 Ths compose.yaml requires the mariadb.env and glpi.env files. You can change some parameters and passwords there. the glpi.env files allows for automatic glpi installation and configuration when first launching the container. The compose script also waits for the mariadb service to be ready before starting the glpi service
-The GLPI image also contains phpCAS installation, a 2 minutes cron execution for GLPI.
+The GLPI image also contains phpCAS installation and sets up a 2 minutes cron execution for GLPI.
+
+You can also replace GLPI files by your own if you have patches to apply
 
 
 ```yaml
@@ -55,6 +57,9 @@ services:
     # - ./ssl-cert.key:/etc/apache2/ssl/ssl-cert.key
     #  and optionnaly
     # - ./server-ca.crt:/etc/apache2/ssl/server-ca.crt
+    # Replace a GLPI file
+    # - ./jsFileToPatch.js:/var/www/html/js/jsFileToPatch.min.js
+    # - ./fileToPatch.php:/var/www/html/src/fileToPatch.php
     ports:
       - "8080:80"
       - "443:443"
